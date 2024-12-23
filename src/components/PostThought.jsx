@@ -16,23 +16,25 @@ const PostThought = () => {
   
     if (!thought || !mood) {
       alert('Please fill in all fields.');
-      return;
+      return; 
     }
-  
+   
     try {
       await addDoc(collection(db, 'thoughts'), {
         username: user.displayName || 'Anonymous', // Use the user's name if available
+        uid: user.uid, // Add user ID to the post
         mood: mood,
         thought: thought,
         timestamp: serverTimestamp(),
       });
       setThought('');
-      setMood(''); //for reset the react state
+      setMood(''); // Reset state
       console.log('Thought posted successfully!');
     } catch (error) {
       console.error('Error posting thought:', error);
     }
   };
+  
 
   return (
     <div className="p-4 bg-white shadow-md rounded-md">

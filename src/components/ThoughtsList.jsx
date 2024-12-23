@@ -1,5 +1,6 @@
 import React from "react";
 import { useState, useEffect } from "react";
+import { auth } from '../firebase/firebase';
 import {
   getFirestore,
   collection,
@@ -16,8 +17,8 @@ const ThoughtsList = () => {
   const [editText, setEditText] = useState("");
 
   const db = getFirestore();
+  const user = auth.currentUser; // Get the current user
 
-  // Real-time listener for thoughts
   useEffect(() => {
     const thoughtsQuery = query(collection(db, "thoughts"));
 
@@ -26,22 +27,18 @@ const ThoughtsList = () => {
         ...doc.data(),
         id: doc.id,
       }));
-
       setThoughts(thoughtsData);
     });
 
-    // Clean up listener on component unmount
     return () => unsubscribe();
   }, [db]);
 
-
-  // Function to update thought
   const updateThought = async (id, newContent) => {
     try {
       const thoughtRef = doc(db, "thoughts", id);
       await updateDoc(thoughtRef, {
         thought: newContent,
-        timestamp: new Date(), // Update the timestamp
+        timestamp: new Date(),
       });
       setEditThoughtId(null);
       setEditText("");
@@ -50,7 +47,6 @@ const ThoughtsList = () => {
     }
   };
 
-  // Function to delete thought
   const deleteThought = async (id) => {
     try {
       const thoughtRef = doc(db, "thoughts", id);
@@ -101,21 +97,26 @@ const ThoughtsList = () => {
                   Update
                 </button>
               </>
+              
             ) : (
               <>
                 <p className="mt-2 text-gray-700">{thought.thought}</p>
-                <button
-                  onClick={() => handleEditClick(thought.id, thought.thought)}
-                  className="bg-yellow-500 text-white px-4 py-2 rounded mt-2 transition duration-300 hover:bg-yellow-600"
-                >
-                  ✏️
-                </button>
-                <button
-                  onClick={() => deleteThought(thought.id)}
-                  className="bg-red-500 text-white px-4 py-2 rounded mt-2 ml-2 transition duration-300 hover:bg-red-600"
-                >
-                  Delete
-                </button>
+                {thought.uid === user?.uid && ( // Check if current user is the post creator
+                  <>
+                    <button
+                      onClick={() => handleEditClick(thought.id, thought.thought)}
+                      className="bg-yellow-500 text-white px-4 py-2 rounded mt-2 transition duration-300 hover:bg-yellow-600"
+                    >
+                      ✏️ Edit
+                    </button>
+                    <button
+                      onClick={() => deleteThought(thought.id)}
+                      className="bg-red-500 text-white px-4 py-2 rounded mt-2 ml-2 transition duration-300 hover:bg-red-600"
+                    >
+                      Delete
+                    </button>
+                  </>
+                )}
               </>
             )}
             <p className="mt-4 text-sm text-gray-500">
@@ -129,5 +130,7 @@ const ThoughtsList = () => {
     </div>
   );
 };
+
+
 
 export default ThoughtsList;
