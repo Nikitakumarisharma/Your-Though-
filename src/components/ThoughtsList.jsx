@@ -1,6 +1,6 @@
 import React from "react";
 import { useState, useEffect } from "react";
-import { auth } from '../firebase/firebase';
+import { auth } from "../firebase/firebase";
 import {
   getFirestore,
   collection,
@@ -9,6 +9,7 @@ import {
   doc,
   deleteDoc,
   updateDoc,
+  sort,
 } from "firebase/firestore";
 
 const ThoughtsList = () => {
@@ -26,7 +27,9 @@ const ThoughtsList = () => {
       const thoughtsData = querySnapshot.docs.map((doc) => ({
         ...doc.data(),
         id: doc.id,
-      }));
+      }))
+      .sort((a, b) => b.timestamp?.seconds - a.timestamp?.seconds); // Sort by timestamp in descending order
+
       setThoughts(thoughtsData);
     });
 
@@ -78,7 +81,7 @@ const ThoughtsList = () => {
             key={thought.id}
             className="bg-white shadow-md rounded-lg p-4 mb-4 hover:shadow-lg transition-shadow duration-300"
           >
-            <p className="font-semibold text-gray-800">
+            <p className="font-semibold text-purple-600">
               {thought.username} -{" "}
               <span className="italic text-gray-600">{thought.mood}</span>
             </p>
@@ -97,21 +100,22 @@ const ThoughtsList = () => {
                   Update
                 </button>
               </>
-              
             ) : (
               <>
                 <p className="mt-2 text-gray-700">{thought.thought}</p>
                 {thought.uid === user?.uid && ( // Check if current user is the post creator
                   <>
                     <button
-                      onClick={() => handleEditClick(thought.id, thought.thought)}
-                      className="bg-yellow-500 text-white px-4 py-2 rounded mt-2 transition duration-300 hover:bg-yellow-600"
-                    >
-                      ✏️ Edit
+                      onClick={() =>
+                        handleEditClick(thought.id, thought.thought)
+                      }
+                      className="bg-yellow-500 text-white px-2 py-1 mt-2 rounded  transition duration-300 hover:bg-yellow-600"
+                    > 
+                      ✏️ 
                     </button>
                     <button
                       onClick={() => deleteThought(thought.id)}
-                      className="bg-red-500 text-white px-4 py-2 rounded mt-2 ml-2 transition duration-300 hover:bg-red-600"
+                      className="bg-red-500 text-white px-2 py-1 rounded ml-2 transition duration-300 hover:bg-red-600"
                     >
                       Delete
                     </button>
@@ -130,7 +134,5 @@ const ThoughtsList = () => {
     </div>
   );
 };
-
-
 
 export default ThoughtsList;
